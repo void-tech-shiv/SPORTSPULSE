@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPORTSPULSE | Players</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <i data-lucide="activity"></i> SPORTS<span>PULSE</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/"><i data-lucide="layout-dashboard"></i> Overview</a></li>
+            <li><a href="/players.html" class="active"><i data-lucide="users"></i> Players</a></li>
+            <li><a href="/teams.html"><i data-lucide="shield-half"></i> Teams</a></li>
+            <li><a href="/matches.html"><i data-lucide="swords"></i> Matches</a></li>
+            <li><a href="/algorithms.html"><i data-lucide="cpu"></i> Algorithms</a></li>
+            <li><a href="#"><i data-lucide="file-text"></i> Reports</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <div class="system-status">
+                <span class="status-indicator"></span> System Online
+            </div>
+            <div style="margin-top: 0.5rem; opacity: 0.5;">Version 2.0.1</div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
+                    <i data-lucide="menu"></i>
+                </button>
+                <h1 class="page-title">Players</h1>
+            </div>
+            <div class="topbar-right">
+                <div class="global-search">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="global-search-input" placeholder="Search players, teams, matches...">
+                    <div id="global-search-results"></div>
+                </div>
+                <div class="system-status">
+                    <span class="status-indicator"></span> LIVE
+                </div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <div class="section-header">
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <h2 class="section-title">Player Database</h2>
+                    <div class="global-search" style="background: rgba(0,0,0,0.2);">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="player-search" placeholder="Filter players...">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="openAddPlayerModal()">
+                    <i data-lucide="plus"></i> Add Player
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Team</th>
+                            <th>Position</th>
+                            <th>Age</th>
+                            <th>Matches</th>
+                            <th>Goals/Runs</th>
+                            <th>Performance</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="players-list">
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 2rem;">
+                                <div class="skeleton" style="height: 20px; width: 100%; margin-bottom: 10px;"></div>
+                                <div class="skeleton" style="height: 20px; width: 100%; margin-bottom: 10px;"></div>
+                                <div class="skeleton" style="height: 20px; width: 100%;"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for adding a player -->
+    <div id="add-player-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Player</h2>
+                <button class="modal-close" onclick="closeModals()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-player-form">
+                    <div class="form-group">
+                        <label class="form-label">Player ID</label>
+                        <input type="text" id="p-id" class="form-control" required placeholder="e.g. P101">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="p-name" class="form-control" required placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Team ID</label>
+                        <input type="text" id="p-team" class="form-control" placeholder="e.g. T01">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Position</label>
+                            <input type="text" id="p-position" class="form-control" placeholder="Forward">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Age</label>
+                            <input type="number" id="p-age" class="form-control" placeholder="25">
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="padding: 1.5rem 0 0 0; margin-top: 1rem;">
+                        <button type="button" class="btn btn-outline" onclick="closeModals()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Player</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/players.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

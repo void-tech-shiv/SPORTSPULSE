@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPORTSPULSE | Algorithm Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .lab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .algo-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            transition: all var(--transition-speed) ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .algo-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 20px rgba(220, 255, 7, 0.1);
+            transform: translateY(-2px);
+        }
+        .algo-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(220, 255, 7, 0.1);
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .algo-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            color: var(--text-primary);
+        }
+        .algo-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+        .algo-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Detail View */
+        .algo-detail {
+            display: none;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-top: 1.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+        .algo-detail.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .back-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--text-muted);
+        }
+        
+        /* Custom UI for KMP */
+        .search-console {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        .search-results-list {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0 0 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .search-results-list li {
+            padding: 1rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <i data-lucide="activity"></i> SPORTS<span>PULSE</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/"><i data-lucide="layout-dashboard"></i> Overview</a></li>
+            <li><a href="/players.html"><i data-lucide="users"></i> Players</a></li>
+            <li><a href="/teams.html"><i data-lucide="shield-half"></i> Teams</a></li>
+            <li><a href="/matches.html"><i data-lucide="swords"></i> Matches</a></li>
+            <li><a href="/algorithms.html" class="active"><i data-lucide="cpu"></i> Algorithms</a></li>
+            <li><a href="#"><i data-lucide="file-text"></i> Reports</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <div class="system-status">
+                <span class="status-indicator"></span> System Online
+            </div>
+            <div style="margin-top: 0.5rem; opacity: 0.5;">Version 2.0.1</div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
+                    <i data-lucide="menu"></i>
+                </button>
+                <h1 class="page-title">Algorithm Lab</h1>
+            </div>
+            <div class="topbar-right">
+                <div class="global-search">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="global-search-input" placeholder="Search players, teams, matches...">
+                    <div id="global-search-results"></div>
+                </div>
+                <div class="system-status">
+                    <span class="status-indicator"></span> LIVE
+                </div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <div id="lab-dashboard">
+                <div class="section-header">
+                    <h2 class="section-title">Execution Modules</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Test and visualize internal Data Structures & Algorithms applied to sports datasets.</p>
+                </div>
+
+                <div class="lab-grid">
+                    <!-- Module 1: StringAlgorithms -->
+                    <div class="algo-card" onclick="openModule('m1')">
+                        <div class="algo-icon"><i data-lucide="search"></i></div>
+                        <h3 class="algo-title">String Algorithms</h3>
+                        <p class="algo-desc">KMP and Rabin-Karp string matching algorithms for ultra-fast text processing across databases.</p>
+                        <div class="algo-badge">M1</div>
+                    </div>
+
+                    <!-- Module 2: DynamicProgramming -->
+                    <div class="algo-card" onclick="openModule('m2')">
+                        <div class="algo-icon" style="color: #0a84ff; background: rgba(10, 132, 255, 0.1);"><i data-lucide="bar-chart"></i></div>
+                        <h3 class="algo-title">Dynamic Programming</h3>
+                        <p class="algo-desc">Knapsack and LCS algorithms for tactical optimization and performance comparison.</p>
+                        <div class="algo-badge">M2</div>
+                    </div>
+
+                    <!-- Module 3: Heuristics -->
+                    <div class="algo-card" onclick="openModule('m3')">
+                        <div class="algo-icon" style="color: #ff9f0a; background: rgba(255, 159, 10, 0.1);"><i data-lucide="lightbulb"></i></div>
+                        <h3 class="algo-title">Heuristics</h3>
+                        <p class="algo-desc">Simulated Annealing and Genetic Algorithms for finding near-optimal roster and scheduling solutions.</p>
+                        <div class="algo-badge">M3</div>
+                    </div>
+
+                    <!-- Module 4: NetworkFlow -->
+                    <div class="algo-card" onclick="openModule('m4')">
+                        <div class="algo-icon" style="color: #32d74b; background: rgba(50, 215, 75, 0.1);"><i data-lucide="network"></i></div>
+                        <h3 class="algo-title">Network Flow</h3>
+                        <p class="algo-desc">Edmonds-Karp max flow and Bipartite matching for analyzing ball movement and player assignments.</p>
+                        <div class="algo-badge">M4</div>
+                    </div>
+
+                    <!-- Module 5: NPCompleteness -->
+                    <div class="algo-card" onclick="openModule('m5')">
+                        <div class="algo-icon" style="color: #bf5af2; background: rgba(191, 90, 242, 0.1);"><i data-lucide="cpu"></i></div>
+                        <h3 class="algo-title">NP Completeness</h3>
+                        <p class="algo-desc">2-SAT and Clique algorithms to analyze constraints and cohesive tactical sub-groups.</p>
+                        <div class="algo-badge">M5</div>
+                    </div>
+
+                    <!-- Module 6: SuffixStructures -->
+                    <div class="algo-card" onclick="openModule('m6')">
+                        <div class="algo-icon" style="color: #ff375f; background: rgba(255, 55, 95, 0.1);"><i data-lucide="file-code"></i></div>
+                        <h3 class="algo-title">Suffix Structures</h3>
+                        <p class="algo-desc">Suffix Arrays for advanced sequence analysis of play-by-play transcription patterns.</p>
+                        <div class="algo-badge">M6</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail View Container -->
+            <div id="module-m1" class="algo-detail">
+                <div class="detail-header">
+                    <button class="back-btn" onclick="closeModules()"><i data-lucide="arrow-left"></i></button>
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.5rem;">String Algorithms</h2>
+                        <span class="algo-badge" style="margin-top: 0.5rem;">Active Execution</span>
+                    </div>
+                </div>
+                
+                <div class="search-console">
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                        <i data-lucide="terminal" style="width: 16px; height: 16px; display: inline-block; vertical-align: text-bottom; margin-right: 0.25rem;"></i>
+                        Executing <code style="color: var(--accent-primary);">StringAlgorithms.kmpSearch(text, pattern)</code> via Web API.
+                    </p>
+                    <div style="display: flex; gap: 1rem;">
+                        <input type="text" id="search-input" class="form-control" placeholder="Enter search pattern (e.g. 'Forward')..." style="flex: 1;">
+                        <button class="btn btn-primary" onclick="executeKMP()">
+                            <i data-lucide="play"></i> Execute
+                        </button>
+                    </div>
+
+                    <div id="results-container" style="display: none; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
+                        <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-secondary);">Execution Results</h3>
+                        <ul id="search-results" class="search-results-list"></ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Generic Placeholder for other modules -->
+            <div id="module-placeholder" class="algo-detail">
+                <div class="detail-header">
+                    <button class="back-btn" onclick="closeModules()"><i data-lucide="arrow-left"></i></button>
+                    <div>
+                        <h2 id="placeholder-title" style="margin: 0; font-size: 1.5rem;">Module Name</h2>
+                        <span class="algo-badge" style="margin-top: 0.5rem; border-color: var(--text-muted); color: var(--text-muted);">In Development</span>
+                    </div>
+                </div>
+                <div style="text-align: center; padding: 4rem 0;">
+                    <i data-lucide="terminal" style="width: 64px; height: 64px; color: var(--text-muted); margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <h3 style="color: var(--text-secondary);">Algorithm integration active</h3>
+                    <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto; margin-bottom: 1.5rem;">Click below to trigger this module's backend execution.</p>
+                    <button class="btn btn-primary" onclick="executeGenericAlgo()">
+                        <i data-lucide="play"></i> Run Simulation
+                    </button>
+                    
+                    <div id="generic-results" style="display: none; margin-top: 2rem; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 1.5rem; text-align: left;">
+                        <h4 style="margin: 0 0 1rem 0; color: var(--accent-primary);">Execution Logs:</h4>
+                        <pre id="generic-output" style="color: #a0aec0; font-size: 0.85rem; white-space: pre-wrap; font-family: monospace;"></pre>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/algorithms.js"></script>
+    <script>
+        lucide.createIcons();
+        
+        let currentModule = '';
+        
+        function openModule(moduleId) {
+            document.getElementById('lab-dashboard').style.display = 'none';
+            document.querySelectorAll('.algo-detail').forEach(el => el.classList.remove('active'));
+            document.getElementById('generic-results').style.display = 'none';
+            
+            currentModule = moduleId;
+            
+            if (moduleId === 'm1') {
+                document.getElementById('module-m1').classList.add('active');
+            } else {
+                const placeholder = document.getElementById('module-placeholder');
+                const titles = {
+                    'm2': 'Dynamic Programming (Knapsack/LCS)',
+                    'm3': 'Heuristics (Simulated Annealing/GA)',
+                    'm4': 'Network Flow (Max Flow/Matching)',
+                    'm5': 'NP Completeness (2-SAT/Clique)',
+                    'm6': 'Suffix Structures (Suffix Array)'
+                };
+                document.getElementById('placeholder-title').textContent = titles[moduleId];
+                placeholder.classList.add('active');
+            }
+        }
+        
+        function closeModules() {
+            document.querySelectorAll('.algo-detail').forEach(el => el.classList.remove('active'));
+            document.getElementById('lab-dashboard').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

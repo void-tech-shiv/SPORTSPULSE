@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPORTSPULSE | Teams</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .team-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .team-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 20px rgba(220, 255, 7, 0.1);
+            transform: translateY(-2px);
+        }
+        .team-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent-primary);
+            opacity: 0;
+            transition: opacity var(--transition-speed) ease;
+        }
+        .team-card:hover::before {
+            opacity: 1;
+        }
+        .team-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .team-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--accent-primary);
+            font-weight: 800;
+        }
+        .team-info h3 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .team-info p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        .team-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .team-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-team {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .delete-team:hover {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <i data-lucide="activity"></i> SPORTS<span>PULSE</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/"><i data-lucide="layout-dashboard"></i> Overview</a></li>
+            <li><a href="/players.html"><i data-lucide="users"></i> Players</a></li>
+            <li><a href="/teams.html" class="active"><i data-lucide="shield-half"></i> Teams</a></li>
+            <li><a href="/matches.html"><i data-lucide="swords"></i> Matches</a></li>
+            <li><a href="/algorithms.html"><i data-lucide="cpu"></i> Algorithms</a></li>
+            <li><a href="#"><i data-lucide="file-text"></i> Reports</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <div class="system-status">
+                <span class="status-indicator"></span> System Online
+            </div>
+            <div style="margin-top: 0.5rem; opacity: 0.5;">Version 2.0.1</div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
+                    <i data-lucide="menu"></i>
+                </button>
+                <h1 class="page-title">Teams</h1>
+            </div>
+            <div class="topbar-right">
+                <div class="global-search">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="global-search-input" placeholder="Search players, teams, matches...">
+                    <div id="global-search-results"></div>
+                </div>
+                <div class="system-status">
+                    <span class="status-indicator"></span> LIVE
+                </div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <div class="section-header">
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <h2 class="section-title">Franchises & Clubs</h2>
+                    <div class="global-search" style="background: rgba(0,0,0,0.2);">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="team-search" placeholder="Filter teams...">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="openAddTeamModal()">
+                    <i data-lucide="plus"></i> Add Team
+                </button>
+            </div>
+
+            <div class="teams-grid" id="teams-list">
+                <!-- Skeletons while loading -->
+                <div class="team-card">
+                    <div class="skeleton" style="height: 48px; width: 48px; border-radius: 12px; margin-bottom: 1rem;"></div>
+                    <div class="skeleton" style="height: 24px; width: 60%; margin-bottom: 0.5rem;"></div>
+                    <div class="skeleton" style="height: 16px; width: 40%; margin-bottom: 1.5rem;"></div>
+                    <div class="skeleton" style="height: 60px; width: 100%;"></div>
+                </div>
+                <div class="team-card">
+                    <div class="skeleton" style="height: 48px; width: 48px; border-radius: 12px; margin-bottom: 1rem;"></div>
+                    <div class="skeleton" style="height: 24px; width: 60%; margin-bottom: 0.5rem;"></div>
+                    <div class="skeleton" style="height: 16px; width: 40%; margin-bottom: 1.5rem;"></div>
+                    <div class="skeleton" style="height: 60px; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for adding a team -->
+    <div id="add-team-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Register New Team</h2>
+                <button class="modal-close" onclick="closeModals()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-team-form">
+                    <div class="form-group">
+                        <label class="form-label">Team ID</label>
+                        <input type="text" id="t-id" class="form-control" required placeholder="e.g. T01">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Team Name</label>
+                        <input type="text" id="t-name" class="form-control" required placeholder="e.g. Manchester United">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sport</label>
+                        <input type="text" id="t-sport" class="form-control" placeholder="e.g. Football">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Head Coach</label>
+                        <input type="text" id="t-coach" class="form-control" placeholder="e.g. Erik ten Hag">
+                    </div>
+                    <div class="modal-footer" style="padding: 1.5rem 0 0 0; margin-top: 1rem;">
+                        <button type="button" class="btn btn-outline" onclick="closeModals()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Team</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for viewing roster -->
+    <div id="view-roster-modal" class="modal-overlay">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="roster-team-name">Team Roster</h2>
+                <button class="modal-close" onclick="closeModals()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Position</th>
+                                <th>Age</th>
+                                <th>Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roster-list">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/teams.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+id,competitionId,teamAId,teamBId,date,venue,score,status
+M01,C01,T01,T02,2026-09-15,KL Stadium,5-0,Completed
+M02,C01,T03,T04,2026-09-16,Delhi Arena,2-1,Completed
+M03,C01,T01,T05,2026-09-29,Jawaharlal Nehru Stadium,1-1,Live
+M04,C01,T02,T03,2026-10-20,Wankhede Stadium,0-0,Upcoming
+M05,C01,T04,T05,2026-10-22,Chinnaswamy Stadium,0-0,Upcoming

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPORTSPULSE | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <i data-lucide="activity"></i> SPORTS<span>PULSE</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/" class="active"><i data-lucide="layout-dashboard"></i> Overview</a></li>
+            <li><a href="/players.html"><i data-lucide="users"></i> Players</a></li>
+            <li><a href="/teams.html"><i data-lucide="shield-half"></i> Teams</a></li>
+            <li><a href="/matches.html"><i data-lucide="swords"></i> Matches</a></li>
+            <li><a href="/algorithms.html"><i data-lucide="cpu"></i> Algorithms</a></li>
+            <li><a href="#"><i data-lucide="file-text"></i> Reports</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <div class="system-status">
+                <span class="status-indicator"></span> System Online
+            </div>
+            <div style="margin-top: 0.5rem; opacity: 0.5;">Version 2.0.1</div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
+                    <i data-lucide="menu"></i>
+                </button>
+                <h1 class="page-title">Dashboard</h1>
+            </div>
+            <div class="topbar-right">
+                <div class="global-search">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="global-search-input" placeholder="Search players, teams, matches...">
+                    <div id="global-search-results"></div>
+                </div>
+                <div class="system-status">
+                    <span class="status-indicator"></span> LIVE
+                </div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <section class="hero">
+                <h2>SPORTS PERFORMANCE ANALYTICS</h2>
+                <p>Track performance. Analyze matches. Explore algorithms.</p>
+            </section>
+
+            <div class="dashboard-grid">
+                <!-- Row 1: KPIs -->
+                <div class="col-3">
+                    <div class="card kpi-card h-100">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Total Players</span>
+                            <div class="kpi-icon"><i data-lucide="users"></i></div>
+                        </div>
+                        <div class="kpi-value" id="players-count"><span class="skeleton">----</span></div>
+                        <div class="kpi-trend"><i data-lucide="activity" style="width: 14px; height: 14px; color: var(--text-secondary);"></i> No historical comparison</div>
+                    </div>
+                </div>
+                
+                <div class="col-3">
+                    <div class="card kpi-card h-100">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Total Teams</span>
+                            <div class="kpi-icon"><i data-lucide="shield-half"></i></div>
+                        </div>
+                        <div class="kpi-value" id="teams-count"><span class="skeleton">--</span></div>
+                        <div class="kpi-trend"><i data-lucide="activity" style="width: 14px; height: 14px; color: var(--text-secondary);"></i> No historical comparison</div>
+                    </div>
+                </div>
+                
+                <div class="col-3">
+                    <div class="card kpi-card h-100">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Total Matches</span>
+                            <div class="kpi-icon"><i data-lucide="swords"></i></div>
+                        </div>
+                        <div class="kpi-value" id="matches-count"><span class="skeleton">--</span></div>
+                        <div class="kpi-trend"><i data-lucide="activity" style="width: 14px; height: 14px; color: var(--text-secondary);"></i> No historical comparison</div>
+                    </div>
+                </div>
+
+                <div class="col-3">
+                    <div class="card kpi-card h-100">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Total Events</span>
+                            <div class="kpi-icon"><i data-lucide="target"></i></div>
+                        </div>
+                        <div class="kpi-value" id="events-count"><span class="skeleton">--</span></div>
+                        <div class="kpi-trend"><i data-lucide="activity" style="width: 14px; height: 14px; color: var(--text-secondary);"></i> No historical comparison</div>
+                    </div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="col-8">
+                    <div class="card h-100">
+                        <div class="section-header">
+                            <h3 class="section-title"><i data-lucide="bar-chart-2"></i> Player Performance Distribution</h3>
+                        </div>
+                        <div class="css-bar-chart" id="performance-chart" style="min-height: 200px; display: flex; align-items: flex-end; justify-content: space-around;">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="card h-100">
+                        <div class="section-header">
+                            <h3 class="section-title"><i data-lucide="award"></i> Top Performers</h3>
+                        </div>
+                        <div id="top-performers-container">
+                            <div class="empty-state">
+                                <i data-lucide="activity"></i>
+                                <p>Loading players...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3 -->
+                <div class="col-8">
+                    <div class="card h-100">
+                        <div class="section-header">
+                            <h3 class="section-title"><i data-lucide="calendar"></i> Recent Matches</h3>
+                            <a href="/matches.html" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">View All</a>
+                        </div>
+                        <div id="recent-matches-container">
+                            <div class="empty-state">
+                                <i data-lucide="activity"></i>
+                                <p>Loading matches...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="card h-100">
+                        <div class="section-header">
+                            <h3 class="section-title"><i data-lucide="radio"></i> Match Events</h3>
+                        </div>
+                        <div id="match-events-container" style="padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1); text-align: center;">
+                            <i data-lucide="video-off" style="opacity: 0.5; margin-bottom: 0.5rem; display: block; margin: 0 auto; width: 24px; height: 24px;"></i>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">No live events currently available</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

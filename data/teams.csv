@@ -1,0 +1,6 @@
+id,name,sport,coach,playerIds
+T01,Chennai Strikers,Football,Gaurav Singh,"P01,P03"
+T02,Mumbai Titans,Football,Vikram Rao,"P02,P06"
+T03,Delhi Falcons,Football,Sanjay Dutt,"P04,P08"
+T04,Bengaluru Warriors,Football,Anil Kumble,"P05,P09"
+T05,Hyderabad Hawks,Football,VVS Laxman,"P07,P10"

@@ -1,0 +1,11 @@
+id,name,teamId,position,age,matchesPlayed,goals,assists,wickets,runs,fitnessScore,performanceScore
+P01,Arjun Mehta,T01,Forward,24,15,12,4,0,0,94.50,92.40
+P02,Rahul Verma,T02,Midfielder,26,14,5,8,0,0,88.20,88.70
+P03,Aarav Sharma,T01,Defender,22,12,1,2,0,0,95.00,85.10
+P04,Kabir Singh,T03,Forward,25,16,14,2,0,0,91.00,94.20
+P05,Rohan Patel,T04,Midfielder,27,15,4,11,0,0,86.50,87.90
+P06,Vihaan Rao,T02,Defender,23,13,0,1,0,0,93.20,81.40
+P07,Aditya Nair,T05,Goalkeeper,28,16,0,0,0,0,96.00,89.50
+P08,Dev Malhotra,T03,Midfielder,21,10,2,5,0,0,89.50,82.60
+P09,Ishaan Kapoor,T04,Forward,24,15,9,3,0,0,92.10,88.00
+P10,Karan Shah,T05,Defender,26,14,2,1,0,0,90.40,84.30
