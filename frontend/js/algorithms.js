@@ -1,131 +1,152 @@
-async function executeKMP() {
-    const query = document.getElementById('search-input').value;
-    if (!query) {
-        alert('Please enter a search term');
-        return;
+const moduleConfig = {
+    m1: {
+        title: 'M1 · String Algorithms',
+        description: 'KMP and Rabin–Karp string matching on the same commentary sample used by the CLI.',
+        fields: [
+            { id: 'algo-pattern', label: 'Search pattern', value: 'Mbappe', placeholder: 'Mbappe' }
+        ]
+    },
+    m2: {
+        title: 'M2 · Suffix Structures',
+        description: 'Builds a suffix array, LCP array, suffix-array search and longest repeated substring.',
+        fields: [
+            { id: 'algo-pattern', label: 'Report search pattern', value: 'goal', placeholder: 'goal' }
+        ]
+    },
+    m3: {
+        title: 'M3 · Dynamic Programming',
+        description: 'Runs LIS, LCS and the fantasy-team 0/1 Knapsack demonstration from the CLI.',
+        fields: [
+            { id: 'algo-budget', label: 'Fantasy budget', value: '50', placeholder: '50', type: 'number' }
+        ]
+    },
+    m4: {
+        title: 'M4 · Network Flow',
+        description: 'Runs Dinic maximum flow and player-position bipartite matching.'
+    },
+    m5: {
+        title: 'M5 · NP-Completeness',
+        description: 'Runs the CLI 3-SAT solver plus exact and approximate Vertex Cover.'
+    },
+    m6: {
+        title: 'M6 · Randomized / Parallel / Heuristics',
+        description: 'Runs the project’s Simulated Annealing roster optimizer and Genetic Algorithm scheduler.'
     }
+};
+
+window.currentModule = '';
+
+function openModule(moduleId) {
+    const config = moduleConfig[moduleId];
+    if (!config) return;
+
+    window.currentModule = moduleId;
+    const dashboard = document.getElementById('lab-dashboard');
+    const detail = document.getElementById('module-detail');
+    if (dashboard) dashboard.style.display = 'none';
+    if (detail) detail.classList.add('active');
+
+    document.getElementById('module-title').textContent = config.title;
+    document.getElementById('module-description').textContent = config.description;
+
+    const inputs = document.getElementById('module-inputs');
+    inputs.innerHTML = '';
+    (config.fields || []).forEach(field => {
+        const wrapper = document.createElement('label');
+        wrapper.style.display = 'block';
+        wrapper.style.marginBottom = '1rem';
+        wrapper.innerHTML = `
+            <span style="display:block;margin-bottom:.45rem;color:var(--text-secondary);font-size:.82rem;font-weight:600;">${field.label}</span>
+            <input id="${field.id}" type="${field.type || 'text'}" value="${field.value || ''}" placeholder="${field.placeholder || ''}" class="form-control" style="width:100%;">
+        `;
+        inputs.appendChild(wrapper);
+    });
+
+    const results = document.getElementById('algorithm-results');
+    results.style.display = 'none';
+    document.getElementById('algorithm-output').textContent = '';
+
+    if (window.lucide) lucide.createIcons();
+}
+
+function closeModules() {
+    window.currentModule = '';
+    const dashboard = document.getElementById('lab-dashboard');
+    const detail = document.getElementById('module-detail');
+    if (detail) detail.classList.remove('active');
+    if (dashboard) dashboard.style.display = 'block';
+}
+
+async function executeCurrentModule() {
+    if (!window.currentModule) return;
+
+    const runButton = document.getElementById('run-module-button');
+    const results = document.getElementById('algorithm-results');
+    const output = document.getElementById('algorithm-output');
+
+    const params = new URLSearchParams({ module: window.currentModule });
+    const pattern = document.getElementById('algo-pattern');
+    const budget = document.getElementById('algo-budget');
+    if (pattern) params.set('pattern', pattern.value.trim() || (window.currentModule === 'm1' ? 'Mbappe' : 'goal'));
+    if (budget) params.set('budget', budget.value || '50');
+
+    results.style.display = 'block';
+    output.textContent = '[SYSTEM] Executing Java backend...';
+    if (runButton) runButton.disabled = true;
 
     try {
-        const response = await fetch('/api/algorithms/search?q=' + encodeURIComponent(query));
-        const results = await response.json();
-        
-        const container = document.getElementById('results-container');
-        const list = document.getElementById('search-results');
-        
-        container.style.display = 'block';
-        list.innerHTML = '';
-        
-        const players = results.players || [];
-        const teams = results.teams || [];
-        const matches = results.matches || [];
-        
-        if (players.length === 0 && teams.length === 0 && matches.length === 0) {
-            list.innerHTML = `
-                <li style="padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 8px; justify-content: center; color: var(--text-muted);">
-                    <i data-lucide="info" style="margin-right: 0.5rem; width: 18px;"></i> No results found matching your query.
-                </li>
-            `;
-            lucide.createIcons();
-            return;
-        }
-        
-        players.forEach(p => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
-                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; color: var(--accent-primary);">
-                        <i data-lucide="user"></i>
-                    </div>
-                    <div style="flex: 1;">
-                        <h4 style="margin: 0; font-size: 1rem; color: var(--text-primary);">${p.name}</h4>
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
-                            Position: ${p.position} &nbsp;&bull;&nbsp; Team ID: ${p.teamId}
-                        </div>
-                    </div>
-                    <div>
-                        <span class="algo-badge" style="background: rgba(220, 255, 7, 0.1); color: var(--accent-primary); border-color: rgba(220, 255, 7, 0.2);">
-                            Match Found
-                        </span>
-                    </div>
-                </div>
-            `;
-            list.appendChild(li);
-        });
-        
-        teams.forEach(t => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
-                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; color: var(--accent-primary);">
-                        <i data-lucide="shield"></i>
-                    </div>
-                    <div style="flex: 1;">
-                        <h4 style="margin: 0; font-size: 1rem; color: var(--text-primary);">${t.name}</h4>
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
-                            Coach: ${t.coach} &nbsp;&bull;&nbsp; Team ID: ${t.id}
-                        </div>
-                    </div>
-                    <div>
-                        <span class="algo-badge" style="background: rgba(220, 255, 7, 0.1); color: var(--accent-primary); border-color: rgba(220, 255, 7, 0.2);">
-                            Match Found
-                        </span>
-                    </div>
-                </div>
-            `;
-            list.appendChild(li);
-        });
+        const response = await fetch('/api/algorithms/run?' + params.toString(), { cache: 'no-store' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || ('Server returned ' + response.status));
 
-        matches.forEach(m => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
-                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; color: var(--accent-primary);">
-                        <i data-lucide="swords"></i>
-                    </div>
-                    <div style="flex: 1;">
-                        <h4 style="margin: 0; font-size: 1rem; color: var(--text-primary);">${m.teamAId} vs ${m.teamBId}</h4>
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
-                            Venue: ${m.venue} &nbsp;&bull;&nbsp; Match ID: ${m.id}
-                        </div>
-                    </div>
-                    <div>
-                        <span class="algo-badge" style="background: rgba(220, 255, 7, 0.1); color: var(--accent-primary); border-color: rgba(220, 255, 7, 0.2);">
-                            Match Found
-                        </span>
-                    </div>
-                </div>
-            `;
-            list.appendChild(li);
-        });
-        
-        lucide.createIcons();
+        output.textContent = [
+            '[SPORTSPULSE ALGORITHM LAB]',
+            data.title || window.currentModule.toUpperCase(),
+            '',
+            data.logs || 'No output returned.',
+            '',
+            `[SYSTEM] Java execution time: ${data.timeMs ?? 0} ms`
+        ].join('\n');
     } catch (error) {
-        console.error('Error executing search:', error);
-        alert('Error performing search. Check console.');
+        console.error('Algorithm execution error:', error);
+        output.textContent = '[ERROR] ' + error.message + '\n\nMake sure the Java web server is running from the updated branch.';
+    } finally {
+        if (runButton) runButton.disabled = false;
     }
 }
 
-async function executeGenericAlgo() {
-    if (!window.currentModule) return;
-    
-    document.getElementById('generic-results').style.display = 'block';
-    const output = document.getElementById('generic-output');
-    output.innerHTML = 'Initializing simulation...\n';
-    
+async function executeDatasetSearch() {
+    const input = document.getElementById('dataset-search-input');
+    const container = document.getElementById('dataset-search-results');
+    if (!input || !container) return;
+
+    const query = input.value.trim();
+    if (!query) {
+        container.innerHTML = '<div class="empty-state"><p>Enter a player, team, venue, date or status.</p></div>';
+        return;
+    }
+
+    container.innerHTML = '<div class="empty-state"><p>Searching with backend KMP...</p></div>';
     try {
-        const response = await fetch('/api/algorithms/simulate?module=' + window.currentModule);
-        if (!response.ok) {
-            throw new Error('Server returned ' + response.status);
-        }
+        const response = await fetch('/api/algorithms/search?q=' + encodeURIComponent(query), { cache: 'no-store' });
         const data = await response.json();
-        
-        let logs = `[SYSTEM] Loaded module: ${window.currentModule}\n`;
-        logs += `[SYSTEM] Execution started at ${new Date().toISOString()}\n\n`;
-        logs += data.logs || 'No output received from backend.';
-        logs += `\n\n[SYSTEM] Execution finished in ${data.timeMs || 0}ms.\n`;
-        
-        output.innerHTML = logs;
+        if (!response.ok) throw new Error(data.error || 'Search failed');
+
+        const players = data.players || [];
+        const teams = data.teams || [];
+        const matches = data.matches || [];
+
+        if (!players.length && !teams.length && !matches.length) {
+            container.innerHTML = '<div class="empty-state"><p>No KMP matches found.</p></div>';
+            return;
+        }
+
+        const rows = [];
+        players.forEach(p => rows.push(`<div class="search-result-item"><strong>Player:</strong>&nbsp; ${p.name} · ${p.position} · ${p.teamId}</div>`));
+        teams.forEach(t => rows.push(`<div class="search-result-item"><strong>Team:</strong>&nbsp; ${t.name} · ${t.sport} · Coach ${t.coach}</div>`));
+        matches.forEach(m => rows.push(`<div class="search-result-item"><strong>Match:</strong>&nbsp; ${m.id} · ${m.teamAId} vs ${m.teamBId} · ${m.date} · ${m.venue}</div>`));
+        container.innerHTML = rows.join('');
     } catch (error) {
-        output.innerHTML += `\n[ERROR] Execution failed: ${error.message}`;
+        container.innerHTML = `<div class="empty-state"><p style="color:var(--status-negative);">${error.message}</p></div>`;
     }
 }

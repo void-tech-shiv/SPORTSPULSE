@@ -23,7 +23,7 @@
         </ul>
         <div class="sidebar-footer">
             <div class="system-status"><span class="status-indicator"></span> System Online</div>
-            <div style="margin-top:.5rem; opacity:.5;">Version 2.0.1</div>
+            <div style="margin-top:.5rem; opacity:.5;">Version 2.1 · CLI parity</div>
         </div>
     </nav>
 
@@ -31,7 +31,7 @@
         <header class="topbar">
             <div class="topbar-left">
                 <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu"><i data-lucide="menu"></i></button>
-                <h1 class="page-title">Reports</h1>
+                <h1 class="page-title">Reports & Analytics</h1>
             </div>
             <div class="topbar-right">
                 <button class="btn btn-outline" id="refresh-reports"><i data-lucide="refresh-cw"></i> Refresh</button>
@@ -42,7 +42,7 @@
         <div class="content-area">
             <section class="hero">
                 <h2>SPORTS ANALYTICS REPORTS</h2>
-                <p>Live summary and detailed match reports generated from SportsPulse data.</p>
+                <p>Live summary, CLI top-scorer analytics and detailed match reports generated from SportsPulse data.</p>
             </section>
 
             <div class="dashboard-grid">
@@ -71,13 +71,27 @@
                     </div>
                 </div>
 
-                <div class="col-12">
-                    <div class="card">
+                <div class="col-8">
+                    <div class="card h-100">
                         <div class="section-header" style="gap:1rem; flex-wrap:wrap;">
                             <h3 class="section-title"><i data-lucide="bar-chart-3"></i> Performance Summary</h3>
                             <input id="report-search" type="search" placeholder="Search match, team, venue or player..." style="min-width:260px; max-width:420px; width:100%; padding:.7rem .9rem; border-radius:8px; border:1px solid var(--border-color); background:rgba(0,0,0,.25); color:var(--text-primary);">
                         </div>
                         <div id="performance-summary" style="margin-top:1rem;"></div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="card h-100">
+                        <div class="section-header">
+                            <div>
+                                <h3 class="section-title"><i data-lucide="trophy"></i> Top Scorers</h3>
+                                <p style="font-size:.78rem;color:var(--text-secondary);margin-top:.3rem;">Same goals-descending analytics as the CLI.</p>
+                            </div>
+                        </div>
+                        <div id="top-scorers-container" style="margin-top:1rem;">
+                            <div class="empty-state"><p>Loading analytics...</p></div>
+                        </div>
                     </div>
                 </div>
 
@@ -97,6 +111,7 @@
 
     <script src="/js/common.js"></script>
     <script src="/js/reports.js"></script>
+    <script src="/js/analytics.js"></script>
     <script>lucide.createIcons();</script>
 </body>
 </html>

@@ -31,11 +31,11 @@ public class MatchApiHandler implements HttpHandler {
             } else if ("DELETE".equalsIgnoreCase(method)) {
                 handleDelete(exchange, path);
             } else {
-                sendResponse(exchange, 405, "{\"error\": \"Method not allowed\"}");
+                sendResponse(exchange, 405, "{\"error\":\"Method not allowed\"}");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendResponse(exchange, 500, "{\"error\": \"Internal server error\"}");
+            sendResponse(exchange, 500, "{\"error\":\"Internal server error\"}");
         }
     }
 
@@ -43,11 +43,11 @@ public class MatchApiHandler implements HttpHandler {
         String[] parts = path.split("/");
         if (parts.length > 3) {
             String id = parts[3];
-            Optional<Match> m = matchDAO.getMatchById(id);
-            if (m.isPresent()) {
-                sendResponse(exchange, 200, JsonConverter.matchToJson(m.get()));
+            Optional<Match> match = matchDAO.getMatchById(id);
+            if (match.isPresent()) {
+                sendResponse(exchange, 200, JsonConverter.matchToJson(match.get()));
             } else {
-                sendResponse(exchange, 404, "{\"error\": \"Match not found\"}");
+                sendResponse(exchange, 404, "{\"error\":\"Match not found\"}");
             }
         } else {
             List<Match> matches = matchDAO.getAllMatches();
@@ -56,68 +56,90 @@ public class MatchApiHandler implements HttpHandler {
     }
 
     private void handlePost(HttpExchange exchange) throws IOException {
-        String body = readBody(exchange);
-        Map<String, String> data = JsonConverter.parseJson(body);
+        Map<String, String> data = JsonConverter.parseJson(readBody(exchange));
+        String id = data.get("id");
+
+        if (id == null || id.trim().isEmpty()) {
+            sendResponse(exchange, 400, "{\"error\":\"Match ID is required\"}");
+            return;
+        }
+        if (matchDAO.getMatchById(id).isPresent()) {
+            sendResponse(exchange, 409, "{\"error\":\"Match with this ID already exists\"}");
+            return;
+        }
 
         try {
-            Match m = new Match(
-                data.get("id"), data.get("competitionId"), data.get("teamAId"), data.get("teamBId"),
-                data.get("date"), data.get("venue"), data.get("score"), data.get("status")
+            String score = data.get("score");
+            if (score == null || score.trim().isEmpty()) score = "0-0";
+            String status = data.get("status");
+            if (status == null || status.trim().isEmpty()) status = "Scheduled";
+
+            Match match = new Match(
+                id,
+                data.get("competitionId"),
+                data.get("teamAId"),
+                data.get("teamBId"),
+                data.get("date"),
+                data.get("venue"),
+                score,
+                status
             );
-            matchDAO.addMatch(m);
-            sendResponse(exchange, 201, JsonConverter.matchToJson(m));
+            matchDAO.addMatch(match);
+            sendResponse(exchange, 201, JsonConverter.matchToJson(match));
         } catch (Exception e) {
-            sendResponse(exchange, 400, "{\"error\": \"Invalid match data\"}");
+            sendResponse(exchange, 400, "{\"error\":\"Invalid match data\"}");
         }
     }
 
     private void handlePut(HttpExchange exchange, String path) throws IOException {
         String[] parts = path.split("/");
         if (parts.length <= 3) {
-            sendResponse(exchange, 400, "{\"error\": \"Missing match ID\"}");
+            sendResponse(exchange, 400, "{\"error\":\"Missing match ID\"}");
             return;
         }
+
         String id = parts[3];
         Optional<Match> optionalMatch = matchDAO.getMatchById(id);
         if (optionalMatch.isEmpty()) {
-            sendResponse(exchange, 404, "{\"error\": \"Match not found\"}");
+            sendResponse(exchange, 404, "{\"error\":\"Match not found\"}");
             return;
         }
 
-        String body = readBody(exchange);
-        Map<String, String> data = JsonConverter.parseJson(body);
-        Match m = optionalMatch.get();
+        Map<String, String> data = JsonConverter.parseJson(readBody(exchange));
+        Match match = optionalMatch.get();
+        if (data.containsKey("competitionId")) match.setCompetitionId(data.get("competitionId"));
+        if (data.containsKey("teamAId")) match.setTeamAId(data.get("teamAId"));
+        if (data.containsKey("teamBId")) match.setTeamBId(data.get("teamBId"));
+        if (data.containsKey("date")) match.setDate(data.get("date"));
+        if (data.containsKey("venue")) match.setVenue(data.get("venue"));
+        if (data.containsKey("score")) match.setScore(data.get("score"));
+        if (data.containsKey("status")) match.setStatus(data.get("status"));
 
-        if (data.containsKey("competitionId")) m.setCompetitionId(data.get("competitionId"));
-        if (data.containsKey("teamAId")) m.setTeamAId(data.get("teamAId"));
-        if (data.containsKey("teamBId")) m.setTeamBId(data.get("teamBId"));
-        if (data.containsKey("date")) m.setDate(data.get("date"));
-        if (data.containsKey("venue")) m.setVenue(data.get("venue"));
-        if (data.containsKey("score")) m.setScore(data.get("score"));
-        if (data.containsKey("status")) m.setStatus(data.get("status"));
-
-        matchDAO.updateMatch(m);
-        sendResponse(exchange, 200, JsonConverter.matchToJson(m));
+        matchDAO.updateMatch(match);
+        sendResponse(exchange, 200, JsonConverter.matchToJson(match));
     }
 
     private void handleDelete(HttpExchange exchange, String path) throws IOException {
         String[] parts = path.split("/");
         if (parts.length <= 3) {
-            sendResponse(exchange, 400, "{\"error\": \"Missing match ID\"}");
+            sendResponse(exchange, 400, "{\"error\":\"Missing match ID\"}");
             return;
         }
+
         String id = parts[3];
         if (matchDAO.getMatchById(id).isEmpty()) {
-            sendResponse(exchange, 404, "{\"error\": \"Match not found\"}");
+            sendResponse(exchange, 404, "{\"error\":\"Match not found\"}");
             return;
         }
+
         matchDAO.deleteMatch(id);
-        sendResponse(exchange, 200, "{\"success\": true}");
+        sendResponse(exchange, 200, "{\"success\":true}");
     }
 
     private String readBody(HttpExchange exchange) throws IOException {
-        InputStream is = exchange.getRequestBody();
-        return new String(is.readAllBytes());
+        try (InputStream is = exchange.getRequestBody()) {
+            return new String(is.readAllBytes());
+        }
     }
 
     private void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {

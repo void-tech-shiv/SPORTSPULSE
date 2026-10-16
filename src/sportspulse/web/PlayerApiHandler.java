@@ -31,39 +31,46 @@ public class PlayerApiHandler implements HttpHandler {
             } else if ("DELETE".equalsIgnoreCase(method)) {
                 handleDelete(exchange, path);
             } else {
-                sendResponse(exchange, 405, "{\"error\": \"Method not allowed\"}");
+                sendResponse(exchange, 405, "{\"error\":\"Method not allowed\"}");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendResponse(exchange, 500, "{\"error\": \"Internal server error\"}");
+            sendResponse(exchange, 500, "{\"error\":\"Internal server error\"}");
         }
     }
 
     private void handleGet(HttpExchange exchange, String path) throws IOException {
         String[] parts = path.split("/");
         if (parts.length > 3) {
-            // /api/players/{id}
             String id = parts[3];
-            Optional<Player> p = playerDAO.getPlayerById(id);
-            if (p.isPresent()) {
-                sendResponse(exchange, 200, JsonConverter.playerToJson(p.get()));
+            Optional<Player> player = playerDAO.getPlayerById(id);
+            if (player.isPresent()) {
+                sendResponse(exchange, 200, JsonConverter.playerToJson(player.get()));
             } else {
-                sendResponse(exchange, 404, "{\"error\": \"Player not found\"}");
+                sendResponse(exchange, 404, "{\"error\":\"Player not found\"}");
             }
         } else {
-            // /api/players
             List<Player> players = playerDAO.getAllPlayers();
             sendResponse(exchange, 200, JsonConverter.playersToJson(players));
         }
     }
 
     private void handlePost(HttpExchange exchange) throws IOException {
-        String body = readBody(exchange);
-        Map<String, String> data = JsonConverter.parseJson(body);
+        Map<String, String> data = JsonConverter.parseJson(readBody(exchange));
+        String id = data.get("id");
+
+        if (id == null || id.trim().isEmpty()) {
+            sendResponse(exchange, 400, "{\"error\":\"Player ID is required\"}");
+            return;
+        }
+        if (playerDAO.getPlayerById(id).isPresent()) {
+            sendResponse(exchange, 409, "{\"error\":\"Player with this ID already exists\"}");
+            return;
+        }
 
         try {
-            Player p = new Player(
-                data.get("id"), data.get("name"), data.get("teamId"), data.get("position"),
+            Player player = new Player(
+                id, data.get("name"), data.get("teamId"), data.get("position"),
                 Integer.parseInt(data.getOrDefault("age", "0")),
                 Integer.parseInt(data.getOrDefault("matchesPlayed", "0")),
                 Integer.parseInt(data.getOrDefault("goals", "0")),
@@ -73,64 +80,67 @@ public class PlayerApiHandler implements HttpHandler {
                 Double.parseDouble(data.getOrDefault("fitnessScore", "0.0")),
                 Double.parseDouble(data.getOrDefault("performanceScore", "0.0"))
             );
-            playerDAO.addPlayer(p);
-            sendResponse(exchange, 201, JsonConverter.playerToJson(p));
+            playerDAO.addPlayer(player);
+            sendResponse(exchange, 201, JsonConverter.playerToJson(player));
         } catch (Exception e) {
-            sendResponse(exchange, 400, "{\"error\": \"Invalid player data\"}");
+            sendResponse(exchange, 400, "{\"error\":\"Invalid player data\"}");
         }
     }
 
     private void handlePut(HttpExchange exchange, String path) throws IOException {
         String[] parts = path.split("/");
         if (parts.length <= 3) {
-            sendResponse(exchange, 400, "{\"error\": \"Missing player ID\"}");
+            sendResponse(exchange, 400, "{\"error\":\"Missing player ID\"}");
             return;
         }
+
         String id = parts[3];
         Optional<Player> optionalPlayer = playerDAO.getPlayerById(id);
         if (optionalPlayer.isEmpty()) {
-            sendResponse(exchange, 404, "{\"error\": \"Player not found\"}");
+            sendResponse(exchange, 404, "{\"error\":\"Player not found\"}");
             return;
         }
 
-        String body = readBody(exchange);
-        Map<String, String> data = JsonConverter.parseJson(body);
-        Player p = optionalPlayer.get();
+        Map<String, String> data = JsonConverter.parseJson(readBody(exchange));
+        Player player = optionalPlayer.get();
 
-        if (data.containsKey("name")) p.setName(data.get("name"));
-        if (data.containsKey("teamId")) p.setTeamId(data.get("teamId"));
-        if (data.containsKey("position")) p.setPosition(data.get("position"));
-        if (data.containsKey("age")) p.setAge(Integer.parseInt(data.get("age")));
-        if (data.containsKey("matchesPlayed")) p.setMatchesPlayed(Integer.parseInt(data.get("matchesPlayed")));
-        if (data.containsKey("goals")) p.setGoals(Integer.parseInt(data.get("goals")));
-        if (data.containsKey("assists")) p.setAssists(Integer.parseInt(data.get("assists")));
-        if (data.containsKey("wickets")) p.setWickets(Integer.parseInt(data.get("wickets")));
-        if (data.containsKey("runs")) p.setRuns(Integer.parseInt(data.get("runs")));
-        if (data.containsKey("fitnessScore")) p.setFitnessScore(Double.parseDouble(data.get("fitnessScore")));
-        if (data.containsKey("performanceScore")) p.setPerformanceScore(Double.parseDouble(data.get("performanceScore")));
+        if (data.containsKey("name")) player.setName(data.get("name"));
+        if (data.containsKey("teamId")) player.setTeamId(data.get("teamId"));
+        if (data.containsKey("position")) player.setPosition(data.get("position"));
+        if (data.containsKey("age")) player.setAge(Integer.parseInt(data.get("age")));
+        if (data.containsKey("matchesPlayed")) player.setMatchesPlayed(Integer.parseInt(data.get("matchesPlayed")));
+        if (data.containsKey("goals")) player.setGoals(Integer.parseInt(data.get("goals")));
+        if (data.containsKey("assists")) player.setAssists(Integer.parseInt(data.get("assists")));
+        if (data.containsKey("wickets")) player.setWickets(Integer.parseInt(data.get("wickets")));
+        if (data.containsKey("runs")) player.setRuns(Integer.parseInt(data.get("runs")));
+        if (data.containsKey("fitnessScore")) player.setFitnessScore(Double.parseDouble(data.get("fitnessScore")));
+        if (data.containsKey("performanceScore")) player.setPerformanceScore(Double.parseDouble(data.get("performanceScore")));
 
-        playerDAO.updatePlayer(p);
-        sendResponse(exchange, 200, JsonConverter.playerToJson(p));
+        playerDAO.updatePlayer(player);
+        sendResponse(exchange, 200, JsonConverter.playerToJson(player));
     }
 
     private void handleDelete(HttpExchange exchange, String path) throws IOException {
         String[] parts = path.split("/");
         if (parts.length <= 3) {
-            sendResponse(exchange, 400, "{\"error\": \"Missing player ID\"}");
+            sendResponse(exchange, 400, "{\"error\":\"Missing player ID\"}");
             return;
         }
+
         String id = parts[3];
         if (playerDAO.getPlayerById(id).isEmpty()) {
-            sendResponse(exchange, 404, "{\"error\": \"Player not found\"}");
+            sendResponse(exchange, 404, "{\"error\":\"Player not found\"}");
             return;
         }
+
         playerDAO.deletePlayer(id);
-        sendResponse(exchange, 200, "{\"success\": true}");
+        sendResponse(exchange, 200, "{\"success\":true}");
     }
 
     private String readBody(HttpExchange exchange) throws IOException {
-        InputStream is = exchange.getRequestBody();
-        return new String(is.readAllBytes());
+        try (InputStream is = exchange.getRequestBody()) {
+            return new String(is.readAllBytes());
+        }
     }
 
     private void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
