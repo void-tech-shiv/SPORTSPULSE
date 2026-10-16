@@ -31,11 +31,11 @@ public class TeamApiHandler implements HttpHandler {
             } else if ("DELETE".equalsIgnoreCase(method)) {
                 handleDelete(exchange, path);
             } else {
-                sendResponse(exchange, 405, "{\"error\": \"Method not allowed\"}");
+                sendResponse(exchange, 405, "{\"error\":\"Method not allowed\"}");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendResponse(exchange, 500, "{\"error\": \"Internal server error\"}");
+            sendResponse(exchange, 500, "{\"error\":\"Internal server error\"}");
         }
     }
 
@@ -43,11 +43,11 @@ public class TeamApiHandler implements HttpHandler {
         String[] parts = path.split("/");
         if (parts.length > 3) {
             String id = parts[3];
-            Optional<Team> t = teamDAO.getTeamById(id);
-            if (t.isPresent()) {
-                sendResponse(exchange, 200, JsonConverter.teamToJson(t.get()));
+            Optional<Team> team = teamDAO.getTeamById(id);
+            if (team.isPresent()) {
+                sendResponse(exchange, 200, JsonConverter.teamToJson(team.get()));
             } else {
-                sendResponse(exchange, 404, "{\"error\": \"Team not found\"}");
+                sendResponse(exchange, 404, "{\"error\":\"Team not found\"}");
             }
         } else {
             List<Team> teams = teamDAO.getAllTeams();
@@ -56,63 +56,72 @@ public class TeamApiHandler implements HttpHandler {
     }
 
     private void handlePost(HttpExchange exchange) throws IOException {
-        String body = readBody(exchange);
-        Map<String, String> data = JsonConverter.parseJson(body);
+        Map<String, String> data = JsonConverter.parseJson(readBody(exchange));
+        String id = data.get("id");
+
+        if (id == null || id.trim().isEmpty()) {
+            sendResponse(exchange, 400, "{\"error\":\"Team ID is required\"}");
+            return;
+        }
+        if (teamDAO.getTeamById(id).isPresent()) {
+            sendResponse(exchange, 409, "{\"error\":\"Team with this ID already exists\"}");
+            return;
+        }
 
         try {
-            Team t = new Team(
-                data.get("id"), data.get("name"), data.get("sport"), data.get("coach")
-            );
-            teamDAO.addTeam(t);
-            sendResponse(exchange, 201, JsonConverter.teamToJson(t));
+            Team team = new Team(id, data.get("name"), data.get("sport"), data.get("coach"));
+            teamDAO.addTeam(team);
+            sendResponse(exchange, 201, JsonConverter.teamToJson(team));
         } catch (Exception e) {
-            sendResponse(exchange, 400, "{\"error\": \"Invalid team data\"}");
+            sendResponse(exchange, 400, "{\"error\":\"Invalid team data\"}");
         }
     }
 
     private void handlePut(HttpExchange exchange, String path) throws IOException {
         String[] parts = path.split("/");
         if (parts.length <= 3) {
-            sendResponse(exchange, 400, "{\"error\": \"Missing team ID\"}");
+            sendResponse(exchange, 400, "{\"error\":\"Missing team ID\"}");
             return;
         }
+
         String id = parts[3];
         Optional<Team> optionalTeam = teamDAO.getTeamById(id);
         if (optionalTeam.isEmpty()) {
-            sendResponse(exchange, 404, "{\"error\": \"Team not found\"}");
+            sendResponse(exchange, 404, "{\"error\":\"Team not found\"}");
             return;
         }
 
-        String body = readBody(exchange);
-        Map<String, String> data = JsonConverter.parseJson(body);
-        Team t = optionalTeam.get();
+        Map<String, String> data = JsonConverter.parseJson(readBody(exchange));
+        Team team = optionalTeam.get();
+        if (data.containsKey("name")) team.setName(data.get("name"));
+        if (data.containsKey("sport")) team.setSport(data.get("sport"));
+        if (data.containsKey("coach")) team.setCoach(data.get("coach"));
 
-        if (data.containsKey("name")) t.setName(data.get("name"));
-        if (data.containsKey("sport")) t.setSport(data.get("sport"));
-        if (data.containsKey("coach")) t.setCoach(data.get("coach"));
-
-        teamDAO.updateTeam(t);
-        sendResponse(exchange, 200, JsonConverter.teamToJson(t));
+        teamDAO.updateTeam(team);
+        sendResponse(exchange, 200, JsonConverter.teamToJson(team));
     }
 
     private void handleDelete(HttpExchange exchange, String path) throws IOException {
         String[] parts = path.split("/");
         if (parts.length <= 3) {
-            sendResponse(exchange, 400, "{\"error\": \"Missing team ID\"}");
+            sendResponse(exchange, 400, "{\"error\":\"Missing team ID\"}");
             return;
         }
+
         String id = parts[3];
         if (teamDAO.getTeamById(id).isEmpty()) {
-            sendResponse(exchange, 404, "{\"error\": \"Team not found\"}");
+            sendResponse(exchange, 404, "{\"error\":\"Team not found\"}");
             return;
         }
+
         teamDAO.deleteTeam(id);
-        sendResponse(exchange, 200, "{\"success\": true}");
+        sendResponse(exchange, 200, "{\"success\":true}");
     }
 
     private String readBody(HttpExchange exchange) throws IOException {
-        InputStream is = exchange.getRequestBody();
-        return new String(is.readAllBytes());
+        try (InputStream is = exchange.getRequestBody()) {
+            return new String(is.readAllBytes());
+        }
     }
 
     private void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
