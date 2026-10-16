@@ -1,14 +1,26 @@
 @echo off
+setlocal
+
 echo ========================================================
 echo SPORTSPULSE - BUILD AND RUN SCRIPT
 echo ========================================================
 
-REM Create bin directory if it doesn't exist
 if not exist "bin" mkdir bin
+if not exist "lib" mkdir lib
 
-REM Compile all java files
+set "PG_JAR=lib\postgresql-42.7.14.jar"
+if not exist "%PG_JAR%" (
+    echo Downloading PostgreSQL JDBC driver...
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.14/postgresql-42.7.14.jar' -OutFile '%PG_JAR%'"
+    if errorlevel 1 (
+        echo Failed to download PostgreSQL JDBC driver.
+        pause
+        exit /b 1
+    )
+)
+
 echo Compiling project...
-javac -d bin src\sportspulse\*.java src\sportspulse\models\*.java src\sportspulse\utils\*.java src\sportspulse\cli\*.java src\sportspulse\algorithms\*.java
+javac -cp "%PG_JAR%" -d bin src\sportspulse\*.java src\sportspulse\models\*.java src\sportspulse\utils\*.java src\sportspulse\db\*.java src\sportspulse\dao\*.java src\sportspulse\cli\*.java src\sportspulse\algorithms\*.java src\sportspulse\web\*.java
 
 if %ERRORLEVEL% neq 0 (
     echo Compilation failed!
@@ -21,7 +33,7 @@ echo.
 echo Starting SportsPulse...
 echo.
 
-REM Run the application
-java -cp bin sportspulse.Main
+java -cp "bin;%PG_JAR%" sportspulse.Main
 
 pause
+endlocal
